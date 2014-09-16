@@ -7,16 +7,19 @@ type 'a exprTree =
 
 (*returns the number of function app in an exprTree*)
 let rec count_ops (et : 'a exprTree) : int = 
-  failwith "You know what a vole is, Morty? YOU KNOW WHAT A VOLE IS?"
-  
+  match et with 
+  | Val n -> 0
+  | Unop (a,b) -> 1 + count_ops b
+  | Binop (a,b,c) -> 1 + count_ops b + count_ops c
+
 
 (*returns an exprTree representing the execution of fact n (as defined in the
   write-up for exercise 5)*)
 let rec make_fact_tree (n : int) : int exprTree =
-  if n < 0 then raise Failure else 
-  match n with 
-  | Val n -> n
-  | Binop (( * ), n,(n-1)) -> (make_fact_tree n * make_fact_tree (n-1))
+  if n < 0 then failwith "oh no" else 
+  match n with
+  | 0 -> Val 1
+  | _ -> Binop(( * ), Val n, make_fact_tree(n-1))
   
 (*computes the expression represented by [et]*)
 let rec eval (et : 'a exprTree) : 'a =
@@ -46,10 +49,11 @@ let concat_right (lst : string list) : string =
   List.fold_right (^) lst ""
 
 let mapi_lst (f: (int -> 'a -> 'b)) (lst: 'a list) : 'b list =
-  List.fold_right (fun a acc -> (f (a::lst))) lst []
+  List.fold_left (fun acc x -> acc@f((List.hd(x)) index)) lst [] 0
+  
 
 let outline (lst: string list) : string list =
-  List.fold_left (fun acc x -> acc ^ x) "0.0" lst
+    mapi_lst (fun index str -> string_of_int(index+1)^". "^str) lst
       
 let scan_right (f: 'a -> 'b -> 'a) (acc: 'a) (lst: 'b list) : 'a list =
   List.fold_right (fun a acc -> a@[acc]) List.rev(lst) [] 
