@@ -13,38 +13,48 @@ let rec count_ops (et : 'a exprTree) : int =
 (*returns an exprTree representing the execution of fact n (as defined in the
   write-up for exercise 5)*)
 let rec make_fact_tree (n : int) : int exprTree =
-	if n < 0 then raise Failure else 
-	match n with 
-	| Val n -> n
-	| Binop (n, (n-1)) -> (make_fact_tree n * make_fact_tree (n-1))
+  if n < 0 then raise Failure else 
+  match n with 
+  | Val n -> n
+  | Binop (( * ), n,(n-1)) -> (make_fact_tree n * make_fact_tree (n-1))
   
 (*computes the expression represented by [et]*)
 let rec eval (et : 'a exprTree) : 'a =
   match et with
   | Val et -> et
-  | Unop 
+  | let (x, e1, in_e2) -> let val_x = eval et e1 in eval ((x, val_x) :: et) in_e2
+  | Binop (operator, e1, e2) -> let v1 = eval et e1 in let v2 = eval et e2 in
+  eval_op operator v1 v2
+
+  and eval_op operator v1 v2 = 
+  match operator with 
+  | "+" -> v1 + v2
+  | "-" -> v1-v2
+  | "*" -> v1 * v2
+  |"/" -> v1 / v2
+  | _ -> failwith "Unknown operator" 
 
 (* PART 2: FOLDING*)
 
 let product (lst : float list) : float =
-	List.fold_left (fun acc x -> acc *. x) 1.0 lst
+  List.fold_left ( *.) 1.0 lst
 
 let concat_left (lst : string list) : string = 
-  List.fold_left (fun acc y -> acc ^ y) "" lst
+  List.fold_left (^) "" lst
 
 let concat_right (lst : string list) : string = 
-  List.fold_right (fun a acc -> a ^ acc) lst ""
+  List.fold_right (^) lst ""
 
 let mapi_lst (f: (int -> 'a -> 'b)) (lst: 'a list) : 'b list =
-  List.fold_left (fun a x -> (f x) :: a) [] (List.rev lst)
-
-
+  List.fold_right (fun a acc -> (f (a::lst))) lst []
 
 let outline (lst: string list) : string list =
-  failwith "I found the snipe!"
+  List.fold_left (fun acc x -> acc ^ x) "0.0" lst
       
 let scan_right (f: 'a -> 'b -> 'a) (acc: 'a) (lst: 'b list) : 'a list =
-  failwith "Kevin's a girl?"
+  List.fold_right (fun a acc -> a@[acc]) List.rev(lst) [] 
+
+
       
 let scan_left (f: 'a -> 'b -> 'a) (acc: 'a) (lst: 'b list) : 'a list =
   failwith "Now, you must wear the cone of shame."
@@ -70,9 +80,10 @@ type matrix = vector list
 
 exception MatrixFailure of string
 
+open Printf
 let show (m : matrix) : unit = 
-  failwith "Do not ask permission to understand / Do not wait for the word of 
-  authority"
+  let () = List.iter (printf "%d ") m in ()
+
 
 let insert_col (m : matrix) (c : vector) : matrix = 
   failwith "Seize reason in your own hand / With your own teeth savor the fruit"
