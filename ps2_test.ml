@@ -1,7 +1,7 @@
-open ps2
+open Ps2
 open Assertions
 
-
+(*Problem 1: Expresion Trees*)
 let a = Binop ((+) ,
                 Val 3,
                 Unop ((~-) ,
@@ -11,7 +11,7 @@ let a = Binop ((+) ,
 
 let b = Val 3
 
-TEST_UNIT "count_ops_test1" = assert_true (count_ops t = 3)
+TEST_UNIT "count_ops_test1" = assert_true (count_ops a = 3)
 TEST_UNIT "count_ops_test2" = assert_true (count_ops b = 0)
 
 let c = Binop(( * ) ,
@@ -42,7 +42,7 @@ TEST_UNIT "eval_test1" = assert_true (eval c = 6)
 TEST_UNIT "eval_test1" = assert_true (eval d = [2;3;4;5;9;8;7;6])
 
 
-
+(*Part 2: FOLDING*)
 
 TEST_UNIT "product_test1" = assert_true (product [4.;5.;6.] = 120.)
 TEST_UNIT "product_test2" = assert_true (product [] = 1.)
@@ -52,20 +52,34 @@ TEST_UNIT "product_test4" = assert_false (product [1.;3.5;4.] = 7.)
 TEST_UNIT "concat_left_test1" = assert_true (concat_left ["nikita";"gupta"] = "nikitagupta")
 TEST_UNIT "concat_left_test2" = assert_true (concat_left [] = "")
 TEST_UNIT "concat_left_test3" = assert_true (concat_left ["nikita";""] = "nikita")
-TEST_UNIT "concat_left_test4" = assert_true (concat_left ["nikita";" gupta";" is";" cool"] = "nikita gupta is cool")
+TEST_UNIT "concat_left_test4" = assert_true (concat_left ["nikita";" is";" cool"] = "nikita is cool")
 TEST_UNIT "concat_left_test5" = assert_false (concat_left ["nikita";"gupta"] = "nikitagupt")
 
 TEST_UNIT "concat_right_test1" = assert_true (concat_right ["nikita";"gupta"] = "nikitagupta")
 TEST_UNIT "concat_right_test2" = assert_true (concat_right [] = "")
 TEST_UNIT "concat_right_test3" = assert_true (concat_right ["nikita";""] = "nikita")
-TEST_UNIT "concat_right_test4" = assert_true (concat_right ["nikita";" gupta";" is";" cool"] = "nikita gupta is cool")
+TEST_UNIT "concat_right_test4" = assert_true (concat_right ["nikita";" is";" cool"] = "nikita is cool")
 TEST_UNIT "concat_right_test5" = assert_false (concat_right ["nikita";"gupta"] = "nikitagupt")
 
-let wc1 = WCpat 
-let wc2 = a
-let wc3 = a
+TEST_UNIT "mapi_lst1" = assert_true (mapi_lst (+) [3;0;-1;-3] = [3;1;1;0])
+TEST_UNIT "mapi_lst2" = assert_true (mapi_lst ( * ) [7;8;9;10] = [0;8;18;30])
+TEST_UNIT "mapi_lst3" = assert_false (mapi_lst ( / ) [2;4;6;8] = [0;3;5;7])
+
+TEST_UNIT "outline1" = assert_true (outline ["point 1"; "point 2"; "point 3"] = ["1. point 1"; "2. point 2"; 
+"3. point 3"])
+TEST_UNIT "outline2" = assert_true (outline ["a"; "b"; "c"] = ["1. a"; "2. b"; "3. c"])
+TEST_UNIT "outline3" = assert_false (outline ["a"; "b"; "c"] = ["2. a"; "3. b"; "1. c"])
+
+TEST_UNIT "scan_left1" = assert_true (scan_left (^) "swag" ["zar"; "doz"] = ["swag"; "swagzar"; "swagzardoz"])
+
+
+
+
+let wc1 = WCPat 
+let wc2 = wc1
+let wc3 = wc1
 let var1 = VarPat "hello"
-let var2 = d;; let var3 = d
+let var2 = var1;; let var3 = d
 let var4 = VarPat "world2"
 let var5 = "Suraj95"
 let tuple0 = TuplePat []
