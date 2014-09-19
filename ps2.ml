@@ -1,3 +1,4 @@
+(*ng354, sda37*)
 
 (* PART 1: EXPRESSION TREES *)
 
@@ -96,9 +97,8 @@ type matrix = vector list
 exception MatrixFailure of string
 
 (*This function prints the elements of the input matrix which is an int list list.*)
-(*let show (m : matrix) : unit = 
-  List.iter (printf "%a ") m  *)
-
+let show (m : matrix) : unit = 
+  failwith "hello"
 
 
 (*Takes a matrix m and vector c and returns the insertion of c as the right-most
@@ -108,6 +108,7 @@ let insert_col (m : matrix) (c : vector) : matrix =
   if List.length c = List.length m then List.fold_right (fun x a -> 
     (x@(if List.length(a) < List.length(c) then [List.nth (List.rev(c))(List.length(a))] 
     else []))::a) m [] 
+  else raise (MatrixFailure "cannot insert")
   
 
 (*Takes in a matrix m as the argument and returns the tranpose of the matrix. The 
@@ -116,24 +117,40 @@ If matrix m initially had x rows and y columns, then the new matrix m' will have
 and x columns. The three invalid cases are matricies with no rows ([]) or no columns 
 ([ []; []; [] ]) and non-rectangular matrices where the sub-lists have different lengths).*)
 let transpose (m : matrix) : matrix = 
-  let beginList = List.fold_left (fun x _ -> x @ [[]]) [] (List.hd m) in 
-  List.fold_left (fun b x -> (insert_col b x)) beginList m
-else raise (MatrixFailure "Cannot transpose")
+  if List.length m = 0 || List.length(List.hd(m)) = 0 then raise (MatrixFailure "cannot transpose") 
+  else
+    let beginList = List.fold_left (fun x _ -> x @ [[]]) [] (List.hd m)
+    in List.fold_left (fun b x -> (insert_col b x)) beginList m
 
 
 (*In two input matrices are not of the same size, then add_matrices will fail and raise an exception. 
 This function adds the two matrices as long as they are both the same size which means it has the same
 number of rows and the same number of columns*)
 let add_matrices (m1 : matrix) (m2 : matrix) : matrix = 
-  List.fold_left (fun acc x -> acc @ [(List.map2 (fun z y -> z+y) x (List.nth m2 (List.length(acc))))] ) []  m1
+  List.fold_left (fun acc x -> acc @ [(List.map2 (fun z y -> z+y) x 
+  (List.nth m2 (List.length(acc))))] ) []  m1
   
 
 (*This function returns the matrix product of the two input matrices. If the two input matrices 
 are not of the size that can be multiplied together, then the function will raise an exception. The number
 of columns in the first matrix has to be the same as the number of rows in the second matrix for both of 
 to be able to be multiplied to each other.*)
-let multiply_matrices (m1 : matrix) (m2 : matrix) : matrix = 
-  failwith "If numbers aren't beautiful, I don't know what is"
+let multiply_matrices (m1 : matrix) (m2 : matrix) : matrix =
+  let m2t = transpose m2 in 
+  (*this helper function  multiplies a row and the transposed column*)
+  let mult_rowcol (v1: vector)(v2: vector) : int = 
+    (snd(List.fold_left (fun (a, b) x -> (List.tl(a), (x * List.hd(a)) + b)) 
+      (v2, 0) v1)) in
+
+  (*multiply the row and the matrix*)
+  let mul_rowmat (v1: vector) (m2_t: matrix) : vector = 
+    snd(List.fold_left (fun (x,y) v -> (x, y@[(mult_rowcol x v)])) (v1, []) m2t) in
+  if (List.fold_left (fun x _ -> x+1) 0 m1)
+  = (List.fold_left (fun x _ -> x+1) 0 m2t) then
+  List.fold_left (fun x y -> x@[(mul_rowmat y m2t)]) [] m1
+
+  else raise (MatrixFailure "cannot be multiplied")
+
 
 (* PART 4: PATTERN MATCHING *)
 

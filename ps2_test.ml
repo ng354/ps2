@@ -71,7 +71,15 @@ TEST_UNIT "outline2" = assert_true (outline ["a"; "b"; "c"] = ["1. a"; "2. b"; "
 TEST_UNIT "outline3" = assert_false (outline ["a"; "b"; "c"] = ["2. a"; "3. b"; "1. c"])
 
 TEST_UNIT "scan_left1" = assert_true (scan_left (^) "swag" ["zar"; "doz"] = ["swag"; "swagzar"; "swagzardoz"])
+TEST_UNIT "scan_right1" = assert_true (scan_right (^) ["zar"; "doz"] "swag" = ["swag"; "dozswag"; "zardozswag"])
 
+TEST_UNIT "fact_list1" = assert_true (fact_list 4 = [1;2;6;24])
+TEST_UNIT "fact_list2" = assert_true (fact_list 0 = [])
+TEST_UNIT "fact_list3" = assert_false (fact_list 10 = [1;2;6;24;120;720;1234;3434;213;12353])
+
+TEST_UNIT "insert_col1" = assert_true (insert_col [[3;4];[5;6]] [7;9] = [[3;4;7];[5;6;9]])
+
+TEST_UNIT "multiply_matrices1" = assert_true (multiply_matrices [[2; 4];[6; 8]] [[1; 3]; [4;5]]  = [[20; 28]; [38; 56]])
 
 
 
