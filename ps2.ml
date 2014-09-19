@@ -189,7 +189,7 @@ let count_var (var_name: string) (p: pat) : int =
 let rec extract_names (p: pat) : string list = 
   match p with
   | VarPat x ->  [x]
-  | TuplePat ps -> List.fold_left (fun acc e -> (extract_names p) @ acc) [] ps
+  | TuplePat ps -> List.fold_left (fun acc e -> (extract_names e) @ acc) [] ps
   | StructorPat (_, Some p) -> extract_names p
   | _ -> []
 
@@ -233,15 +233,40 @@ let all_answers (f: 'a -> 'b list option) (l: 'a list) : 'b list option =
 
 (*This function checks whether a value matches a pattern. If it doesn, then it returns Some 1, where 1
 is the list of bindings produced by the match. If it does not match, then return None.*)
-(* let rec match_pat (v,p) : bindings =
-  match (v,p) with
-  | (_,WCPat) -> Some []
-  | (x,VarPat s) -> Some [(s,x)]
-  | (UnitVal,UnitPat) -> Some []
-  | (TupleVal h::t,TuplePat hd::tl) -> if (List.length t) = (List.length tl) then 
-                                       match hd with
-                                       | VarPat x -> [(x,h)]
-                                       | TuplePat lst -> (fold_left (fun a x -> a@[(x,h)]) [] (extract_names lst)) @ (match_pat t tl) *)
+
+let rec combine (vlst : value list) (plst : pat list) : (string*value) list =
+  if List.length(vlst) = List.length(plst) then
+    match plst with
+    | [] -> []
+    | h::t -> match h with
+              | VarPat x -> (combine (List.tl(vlst)) t) @ [(x,List.hd(vlst))] 
+              | TuplePat lst -> (combine (List.tl(vlst)) t) @ (List.fold_left (fun a x -> a@[(x,List.hd(vlst))]) [] (extract_names (TuplePat lst)))
+              | WCPat -> []
+              | UnitPat -> []
+              | ConstPat a -> []
+              | StructorPat (_, patopt) -> match patopt with
+                                           | None -> []
+                                           | Some x -> combine vlst [x]
+  else [] 
+
+
+
+
+let match_pat (v,p) : bindings =
+  let helper (v1,p1) : (string * value) list = 
+    match (v1,p1) with 
+    | (_,WCPat) -> []
+    | (x,VarPat s) -> [(s,x)]
+    | (UnitVal,UnitPat) -> []
+    | (TupleVal vlst, TuplePat plst) -> combine vlst plst
+    | (_,_) -> [("Failure", UnitVal)]
+
+  in if helper (v,p) = [("Failure",UnitVal)] then None else Some (helper (v,p))
+
+| (StructorVal (s,v_opt), StructorPat (s',p_opt)) -> (if s = s' then match (v_opt,p_opt) with
+                                                                         | (Some v, Some p) -> helper (v,p)
+                                                                         | (None, None) -> [("Failure",UnitVal)]) 
+
 
 (*5. *************************************************************************)
 exception NoAnswer
@@ -249,10 +274,20 @@ exception NoAnswer
 (*This function applies the function arguments to elements of the list argument until that function 
 returns Some v, in which the funciton first_answer will return v. If this function never encounters
 an element that produces Some v, then it should raise the exception NoAnswer.*)
-let rec first_answer (f: 'a -> 'b option) (l: 'a list) =
-  failwith "Didactically speaking, seminal evidence seems to explicate the fact
-  that your repudiation of entropy supports my theory of space-time synthesis. 
-  Of this, I am irrefutably confident." 
+(*let is_val (x : 'a) : bool =
+  match x with  
+  | ConstVal a -> true
+  | UnitVal ->  true
+  | TupleVal a -> true 
+  | StructorVal (a,b) ->  true*)
+
+
+
+(*let rec first_answer (f: 'a -> 'b option) (l: 'a list) : 'b =
+  if l = [] then raise NoAnswer else
+  match (f (List.hd(l))) with
+  | Some x ->  if is_val x then x else first_answer f (List.tl(l))
+  | None -> first_answer f (List.tl(l))*) 
 
                                               (*-Wordy guy at the Stoic Club*)
 
@@ -262,7 +297,16 @@ let rec first_answer (f: 'a -> 'b option) (l: 'a list) =
 If it does, then it returns Some b, where b is the list of bindings produced by the first 
 pattern that matches. Otherwise it will return None. *)
 let match_pats ((v: value), (ps: pat list)) : bindings =
-  failwith "My dad really got after me. He said I get no dessert for the rest of
-  the decade..." 
+  (*let does_match ((v:value),(p:pat)) : bindings =
+  match (v,p) with
+  | (_,WCPat) -> []
+  | (x,VarPat s) -> [(s,x)]
+  | (UnitVal,UnitPat) -> []
+  | (TupleVal vlst, TuplePat plst) -> combine vlst plst*)
+
+
+(*let match_pats ((v: value), (ps: pat list)) : bindings =
+  fold_left (fun a x -> ) [] ps*)
+
 
                                                                     (*-Pokey*) 
