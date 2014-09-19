@@ -96,8 +96,8 @@ type matrix = vector list
 exception MatrixFailure of string
 
 (*This function prints the elements of the input matrix which is an int list list.*)
-let show (m : matrix) : unit = 
-  List.iter (printf "%a ") m  
+(*let show (m : matrix) : unit = 
+  List.iter (printf "%a ") m  *)
 
 
 
@@ -108,7 +108,7 @@ let insert_col (m : matrix) (c : vector) : matrix =
   if List.length c = List.length m then List.fold_right (fun x a -> 
     (x@(if List.length(a) < List.length(c) then [List.nth (List.rev(c))(List.length(a))] 
     else []))::a) m [] 
-  else raise (MatrixFailure "Cannot insert") 
+  
 
 (*Takes in a matrix m as the argument and returns the tranpose of the matrix. The 
 transpose of a matrix is another matrix with all of the rows and columns swapped. 
@@ -125,7 +125,7 @@ else raise (MatrixFailure "Cannot transpose")
 This function adds the two matrices as long as they are both the same size which means it has the same
 number of rows and the same number of columns*)
 let add_matrices (m1 : matrix) (m2 : matrix) : matrix = 
-  List.fold_left (fun a x -> a + m1 x ) 0 m2
+  List.fold_left (fun acc x -> acc @ [(List.map2 (fun z y -> z+y) x (List.nth m2 (List.length(acc))))] ) []  m1
   
 
 (*This function returns the matrix product of the two input matrices. If the two input matrices 
@@ -231,9 +231,8 @@ let all_answers (f: 'a -> 'b list option) (l: 'a list) : 'b list option =
 
 (*4. *************************************************************************)
 
-(*This function checks whether a value matches a pattern. If it doesn, then it returns Some 1, where 1
-is the list of bindings produced by the match. If it does not match, then return None.*)
 
+(*This helper function combines a value list and a pat list to the problem set specifications*)
 let rec combine (vlst : value list) (plst : pat list) : (string*value) list =
   if List.length(vlst) = List.length(plst) then
     match plst with
@@ -249,23 +248,24 @@ let rec combine (vlst : value list) (plst : pat list) : (string*value) list =
                                            | Some x -> combine vlst [x]
   else [] 
 
-
-
-
-let match_pat (v,p) : bindings =
-  let helper (v1,p1) : (string * value) list = 
+(*This function checks whether a value matches a pattern. If it doesn, then it returns Some 1, where 1
+is the list of bindings produced by the match. If it does not match, then return None.*)
+let match_pat ((v:value),(p:pat)) : bindings =
+  let rec helper (v1,p1) : (string * value) list = 
     match (v1,p1) with 
     | (_,WCPat) -> []
     | (x,VarPat s) -> [(s,x)]
     | (UnitVal,UnitPat) -> []
     | (TupleVal vlst, TuplePat plst) -> combine vlst plst
+    | (StructorVal (s,v_opt), StructorPat (s',p_opt)) -> if s = s' then match (v_opt,p_opt) with
+                                                                         | (Some v, Some p) -> helper (v,p)
+                                                                         | (None, None) -> [] 
+                                                                         | (_,_) -> [("Failure", UnitVal)] 
+                                                          else [("Failure", UnitVal)]              
     | (_,_) -> [("Failure", UnitVal)]
-
   in if helper (v,p) = [("Failure",UnitVal)] then None else Some (helper (v,p))
 
-| (StructorVal (s,v_opt), StructorPat (s',p_opt)) -> (if s = s' then match (v_opt,p_opt) with
-                                                                         | (Some v, Some p) -> helper (v,p)
-                                                                         | (None, None) -> [("Failure",UnitVal)]) 
+
 
 
 (*5. *************************************************************************)
@@ -274,20 +274,13 @@ exception NoAnswer
 (*This function applies the function arguments to elements of the list argument until that function 
 returns Some v, in which the funciton first_answer will return v. If this function never encounters
 an element that produces Some v, then it should raise the exception NoAnswer.*)
-(*let is_val (x : 'a) : bool =
-  match x with  
-  | ConstVal a -> true
-  | UnitVal ->  true
-  | TupleVal a -> true 
-  | StructorVal (a,b) ->  true*)
 
-
-
-(*let rec first_answer (f: 'a -> 'b option) (l: 'a list) : 'b =
-  if l = [] then raise NoAnswer else
-  match (f (List.hd(l))) with
-  | Some x ->  if is_val x then x else first_answer f (List.tl(l))
-  | None -> first_answer f (List.tl(l))*) 
+let rec first_answer (f: 'a -> 'b option) (l: 'a list) : 'b =
+  match l with
+  | [] -> raise NoAnswer
+  | h::t -> match (f h) with
+            | Some x ->  x
+            | None -> first_answer f t
 
                                               (*-Wordy guy at the Stoic Club*)
 
@@ -296,17 +289,15 @@ an element that produces Some v, then it should raise the exception NoAnswer.*)
 (*This function checks wehther a value matches any of the patterns in the list argument. 
 If it does, then it returns Some b, where b is the list of bindings produced by the first 
 pattern that matches. Otherwise it will return None. *)
+
 let match_pats ((v: value), (ps: pat list)) : bindings =
-  (*let does_match ((v:value),(p:pat)) : bindings =
-  match (v,p) with
-  | (_,WCPat) -> []
-  | (x,VarPat s) -> [(s,x)]
-  | (UnitVal,UnitPat) -> []
-  | (TupleVal vlst, TuplePat plst) -> combine vlst plst*)
-
-
-(*let match_pats ((v: value), (ps: pat list)) : bindings =
-  fold_left (fun a x -> ) [] ps*)
+  let rec helper (v1,ps1) : (string * value) list =
+    match ps1 with 
+    | [] -> [("Failure", UnitVal)] 
+    | h::t -> if match_pat (v1,h) = None then helper (v1,t) else match match_pat (v1,h) with
+                                                                 | None -> []
+                                                                 | Some x -> x
+  in if helper (v,ps)  = [("Failure", UnitVal)] then None else Some (helper (v,ps))
 
 
                                                                     (*-Pokey*) 

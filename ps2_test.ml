@@ -90,6 +90,12 @@ let tuple3 = TuplePat [var1;var4;var5]
 let tuple4 = TuplePat [wc1;var1;wc2;var2;wc3;var5]
 let tuple5 = TuplePat [var1;wc1;var4;wc2;var5;wc3]
 let structor1 = StructorPat ("1",Some tuple4)
+let const1 =  ConstPat 2
+
+let val1 = ConstVal 1
+let val2 = ConstVal 3
+let val3 = TupleVal [val1;val2]
+let val4 = StructorVal ("hello", Some val3)
 
 
 TEST_UNIT "count_wcs0" = assert_true (count_wcs tuple0 = 0)
@@ -115,7 +121,7 @@ TEST_UNIT "extract_names4" = assert_true (extract_names tuple0 = [])
 TEST_UNIT "extract_names4" = assert_true (extract_names tuple1 = [])
 TEST_UNIT "extract_names4" = assert_true (extract_names tuple3 = ["Suraj95";"world2";"hello"])
 TEST_UNIT "extract_names4" = assert_true (extract_names tuple4 = ["Suraj95";"hello";"hello"])
-TEST_UNIT "extract_names4" = assert_true (extract_names structor1 = ["Suraj95";"hello";"hello"])*)
+TEST_UNIT "extract_names4" = assert_true (extract_names structor1 = ["Suraj95";"hello";"hello"])
 
 TEST_UNIT "all_vars_unique0" = assert_true (all_vars_unique tuple0)
 TEST_UNIT "all_vars_unique1" = assert_true (all_vars_unique tuple1)
@@ -127,6 +133,8 @@ TEST_UNIT "all_vars_unique5" = assert_true (all_vars_unique tuple5)
 TEST_UNIT "all_answers1" = assert_true (all_answers (fun x -> if x = 0 then None else Some [x+1]) [1;2;3] = Some [4;3;2])
 TEST_UNIT "all_answers2" = assert_true (all_answers (fun x -> if x = 0 then None else Some [x+1]) [] = Some [])
 TEST_UNIT "all_answers5" = assert_true (all_answers (fun x -> if x = 0 then None else Some [x+1]) [0;1;2;3] = None)
+
+TEST_UNIT "match_pat" = assert_true (match_pat (val1,const1) = Some [])
 
 
 let () = Pa_ounit_lib.Runtime.summarize()
