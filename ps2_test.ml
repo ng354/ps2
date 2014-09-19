@@ -77,18 +77,19 @@ TEST_UNIT "scan_left1" = assert_true (scan_left (^) "swag" ["zar"; "doz"] = ["sw
 
 let wc1 = WCPat 
 let wc2 = wc1
-let wc3 = wc1
+let wc3 = wc2
 let var1 = VarPat "hello"
-let var2 = var1;; let var3 = d
+let var2 = var1
+let var3 = var2
 let var4 = VarPat "world2"
-let var5 = "Suraj95"
+let var5 = VarPat "Suraj95"
 let tuple0 = TuplePat []
 let tuple1 = TuplePat [wc1;wc2;wc3]
 let tuple2 = TuplePat [var1;var2;var3]
 let tuple3 = TuplePat [var1;var4;var5]
 let tuple4 = TuplePat [wc1;var1;wc2;var2;wc3;var5]
 let tuple5 = TuplePat [var1;wc1;var4;wc2;var5;wc3]
-let structor1 = StructorPat ("1",tuple4)
+let structor1 = StructorPat ("1",Some tuple4)
 
 
 TEST_UNIT "count_wcs0" = assert_true (count_wcs tuple0 = 0)
@@ -106,24 +107,26 @@ TEST_UNIT "count_wcs_and_var_lengths2" = assert_true (count_wcs_and_var_lengths 
 
 TEST_UNIT "count_var0" = assert_true (count_var "world" tuple0 = 0)
 TEST_UNIT "count_var1" = assert_true (count_var "world" tuple1 = 0)
-TEST_UNIT "count_var2" = assert_true (count_var "hello" tuple1 = 3)
+TEST_UNIT "count_var2" = assert_true (count_var "hello" tuple1 = 0)
 TEST_UNIT "count_var3" = assert_true (count_var "hello" tuple4 = 2)
 TEST_UNIT "count_var4" = assert_true (count_var "hello" structor1 = 2)
 
 TEST_UNIT "extract_names4" = assert_true (extract_names tuple0 = [])
 TEST_UNIT "extract_names4" = assert_true (extract_names tuple1 = [])
-TEST_UNIT "extract_names4" = assert_true (extract_names tuple3 = ["world2";"Suraj95"])
-TEST_UNIT "extract_names4" = assert_true (extract_names tuple4 = ["hello";"hello";"Suraj95"])
-TEST_UNIT "extract_names4" = assert_true (extract_names structor1 = ["hello";"hello";"Suraj95"])
+TEST_UNIT "extract_names4" = assert_true (extract_names tuple3 = ["Suraj95";"world2";"hello"])
+TEST_UNIT "extract_names4" = assert_true (extract_names tuple4 = ["Suraj95";"hello";"hello"])
+TEST_UNIT "extract_names4" = assert_true (extract_names structor1 = ["Suraj95";"hello";"hello"])*)
 
-TEST_UNIT "all_vars_unique0" = assert_false (all_vars_unique tuple0)
-TEST_UNIT "all_vars_unique1" = assert_false (all_vars_unique tuple1)
+TEST_UNIT "all_vars_unique0" = assert_true (all_vars_unique tuple0)
+TEST_UNIT "all_vars_unique1" = assert_true (all_vars_unique tuple1)
 TEST_UNIT "all_vars_unique2" = assert_true (all_vars_unique tuple3)
 TEST_UNIT "all_vars_unique3" = assert_false (all_vars_unique tuple4)
 TEST_UNIT "all_vars_unique4" = assert_false (all_vars_unique structor1)
 TEST_UNIT "all_vars_unique5" = assert_true (all_vars_unique tuple5)
 
-
+TEST_UNIT "all_answers1" = assert_true (all_answers (fun x -> if x = 0 then None else Some [x+1]) [1;2;3] = Some [4;3;2])
+TEST_UNIT "all_answers2" = assert_true (all_answers (fun x -> if x = 0 then None else Some [x+1]) [] = Some [])
+TEST_UNIT "all_answers5" = assert_true (all_answers (fun x -> if x = 0 then None else Some [x+1]) [0;1;2;3] = None)
 
 
 let () = Pa_ounit_lib.Runtime.summarize()
