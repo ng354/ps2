@@ -98,8 +98,8 @@ exception MatrixFailure of string
 
 (*This function prints the elements of the input matrix which is an int list list.*)
 let show (m : matrix) : unit = 
-  failwith "hello"
-
+  List.fold_left (fun acc x -> List.fold_left (fun acc1 y -> print_string(string_of_int(y)^" ")) 
+    () x) () m 
 
 (*Takes a matrix m and vector c and returns the insertion of c as the right-most
 column in m. If the sizes of the matrix and vector are not the same, then the function
@@ -241,10 +241,6 @@ let all_answers (f: 'a -> 'b list option) (l: 'a list) : 'b list option =
               | None -> []
               | Some x -> (helper g t) @ x 
   in if (List.length(l) = List.length(helper f l)) then Some (helper f l) else None
-
-
-
-
 
 (*4. *************************************************************************)
 
